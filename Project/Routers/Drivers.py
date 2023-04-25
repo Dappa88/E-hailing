@@ -196,8 +196,9 @@ def Verifieduser(Driver_id:int, db : Session = Depends(get_db),Driverauth:str =D
     driver_Document = db.query(models.DriverDocument).filter(models.Driver.id == Driver_id).first()
     
     if driver_Document:
-        driver_query.update(is_verified= True,synchronize_session=False)
+        driver_query.update(is_verified=True,synchronize_session=False)
         db.commit()
+        db.refresh()
     
     return driver_query.first()
              
