@@ -196,10 +196,57 @@ def Verifieduser(Driver_id:int, db : Session = Depends(get_db),Driverauth:str =D
     driver_Document = db.query(models.DriverDocument).filter(models.Driver.id == Driver_id).first()
     
     if driver_Document:
-        driver_query.update(is_verified=True,synchronize_session=False)
+        Driver_verified={
+            "is_verified":True
+        }
+        
+        driver_query.update(Driver_verified,synchronize_session=False)
         db.commit()
-        db.refresh()
+        
     
     return driver_query.first()
              
-     
+    
+# getone
+@router.get("/{Driver_id}",response_model=Schema.Driver_return)
+# user_email is to verify acesstoken and other stuff ,it is just a variable saving the get_currentuser
+def read_user(Driver_id: int, db: Session = Depends(get_db) , Driverauth : str = Depends(oauth2.get_currentuser)):
+   
+    driver_query = db.query(models.Driver).filter(models.Driver.id == Driver_id)
+    
+    driver_payload = driver_query.first()
+    
+    
+   
+    if driver_payload is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND ,detail="User not found")
+    
+    if driver_payload.id != Driverauth.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User not authorised")
+        
+    return driver_payload
+
+
+# get all
+@router.get("/",response_model=List[Schema.Driver_return])
+def get_users(db: Session=Depends(get_db)):
+    return db.query(models.Driver).all()
+
+
+#delete
+@router.delete("/{Driver_id}",status_code=status.HTTP_202_ACCEPTED)
+def read_user(Driver_id: int, db: Session = Depends(get_db) , Driverauth : str = Depends(oauth2.get_currentuser)):
+    driver_query = db.query(models.Driver).filter(models.Driver.id == Driver_id)
+    
+    driver_payload = driver_query.first()
+    
+    
+    if driver_payload is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND ,detail="User not found")
+    
+    if driver_payload.id != Driverauth.user_id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="User not authorised")
+        
+    # default
+    driver_query.delete(synchronize_session=False)
+    driver_query.commit()
