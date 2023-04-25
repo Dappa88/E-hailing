@@ -180,3 +180,25 @@ def GenerateCode(Driver_id:int, db : Session = Depends(get_db),Driverauth:str =D
         
         
     
+@router.patch("/{Driver_id}",status_code=status.HTTP_202_ACCEPTED,response_model=Schema.Driver_return)
+def Verifieduser(Driver_id:int, db : Session = Depends(get_db),Driverauth:str =Depends(oauth2.get_currentuser)):
+    driver_query = db.query(models.Driver).filter(models.Driver.id == Driver_id)
+    
+    driver_payload = driver_query.first()
+    
+    
+    if driver_payload == None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,detail="Driver not found")
+    
+    if int(Driverauth.user_id) != driver_payload.id:
+        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED,detail="Not authorized to make changes")
+    
+    driver_Document = db.query(models.DriverDocument).filter(models.Driver.id == Driver_id).first()
+    
+    if driver_Document:
+        driver_query.update(is_verified= True,synchronize_session=False)
+        db.commit()
+    
+    return driver_query.first()
+             
+     

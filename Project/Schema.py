@@ -23,6 +23,7 @@ class Driver_return(BaseModel):
     name:str
     phone:str
     city:str
+    is_verified:bool
     class Config:
         orm_mode = True
     
@@ -68,5 +69,11 @@ class Driver_referalcode_return(BaseModel):
     class Config:
         orm_mode = True
         
-# class DriverDocument(BaseModel):
-#     image:str
+class DriverDocumentReturn(BaseModel):
+    image:str
+    Driverid:str
+    Drivers: Driver_return
+    
+    
+    class Config:
+        orm_mode = True
